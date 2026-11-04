@@ -1,0 +1,2 @@
+Get-MMAgent
+Disable-MMAgent -MemoryCompression

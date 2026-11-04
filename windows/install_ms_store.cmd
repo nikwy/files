@@ -1,0 +1,2 @@
+wsreset -i
+@pause

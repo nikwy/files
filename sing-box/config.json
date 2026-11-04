@@ -1,0 +1,149 @@
+{
+  "log": {
+    "level": "error"
+  },
+  "dns": {
+    "servers": [
+      {
+        "type": "udp",
+        "tag": "Google-DNS",
+        "detour": "ProtonVPN",
+        "server": "8.8.8.8"
+      },
+      {
+        "type": "udp",
+        "tag": "NSDI-DNS",
+        "detour": "Direct",
+        "server": "195.208.4.1"
+      }
+    ],
+    "final": "Google-DNS"
+  },
+  "http_clients": [
+    {
+      "tag": "Downloader",
+      "detour": "Direct"
+    }
+  ],
+  "endpoints": [
+    {
+      "type": "wireguard",
+      "tag": "ProtonVPN",
+      "address": "...",
+      "private_key": "...",
+      "peers": [
+        {
+          "address": "...",
+          "port": 51820,
+          "public_key": "...",
+          "allowed_ips": "0.0.0.0/0"
+        }
+      ],
+      "amnezia": {
+        "jc": 0,
+        "jmin": 0,
+        "jmax": 0,
+        "h1": 1,
+        "h2": 2,
+        "h3": 3,
+        "h4": 4,
+        "i1": "..."
+      }
+    },
+    {
+      "type": "wireguard",
+      "tag": "WARP",
+      "address": "...",
+      "private_key": "...",
+      "peers": [
+        {
+          "address": "...",
+          "port": 2408,
+          "public_key": "...",
+          "allowed_ips": "0.0.0.0/0"
+        }
+      ],
+      "amnezia": {
+        "jc": 0,
+        "jmin": 0,
+        "jmax": 0,
+        "h1": 1,
+        "h2": 2,
+        "h3": 3,
+        "h4": 4,
+        "i1": "..."
+      }
+    }
+  ],
+  "inbounds": [
+    {
+      "type": "tun",
+      "tag": "Tunnel",
+      "mtu": 1500,
+      "address": "172.19.0.1/30",
+      "auto_route": true,
+      "strict_route": true,
+      "stack": "system"
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "direct",
+      "tag": "Direct"
+    },
+    {
+      "type": "selector",
+      "tag": "Games",
+      "outbounds": [
+        "ProtonVPN",
+        "WARP",
+		"Direct"
+      ],
+      "interrupt_exist_connections": true
+    }
+  ],
+  "route": {
+    "rules": [
+      {
+        "action": "sniff",
+        "sniffer": [
+          "http",
+          "tls",
+          "dns",
+          "quic"
+        ],
+        "timeout": "300ms"
+      },
+      {
+        "protocol": "dns",
+        "action": "hijack-dns"
+      },
+	  {
+        "rule_set": "GeoSite-Whitelist",
+        "outbound": "Direct"
+      },
+      {
+        "process_name": [
+          "chrome.exe",
+		  "Telegram.exe",
+		  "obs64.exe",
+		  "Update.exe",
+		  "Discord.exe",
+		  "DiscordSystemHelper.exe"
+        ],
+        "outbound": "ProtonVPN"
+      }
+    ],
+    "rule_set": [
+      {
+        "type": "remote",
+        "tag": "GeoSite-Whitelist",
+        "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/release/sing-box/whitelist.srs"
+      }
+    ],
+    "final": "Games",
+    "auto_detect_interface": true,
+    "default_domain_resolver": "NSDI-DNS",
+    "default_http_client": "Downloader"
+  }
+}
