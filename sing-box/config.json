@@ -1,0 +1,148 @@
+{
+  "log": {
+    "level": "error"
+  },
+  "dns": {
+    "servers": [
+      {
+        "type": "udp",
+        "tag": "quad9_dns",
+        "detour": "ProtonVPN",
+        "server": "9.9.9.10"
+      },
+	  {
+        "type": "udp",
+        "tag": "nsdi_dns",
+        "detour": "Direct",
+        "server": "195.208.4.1"
+      },
+    ],
+    "final": "quad9_dns"
+  },
+  "http_clients": [
+    {
+      "tag": "downloader",
+      "detour": "Direct"
+    }
+  ],
+  "endpoints": [
+    {
+      "type": "wireguard",
+      "tag": "ProtonVPN",
+      "address": "...",
+      "private_key": "...",
+      "peers": [
+        {
+          "address": "185.183.34.149",
+          "port": 51820,
+          "public_key": "J4XVdtoBVc/EoI2Yk673Oes97WMnQSH5KfamZNjtM2s=",
+          "allowed_ips": "0.0.0.0/0",
+		  "persistent_keepalive_interval": 25,
+        }
+      ],
+      "amnezia": {
+        "jc": 20,
+        "jmin": 400,
+        "jmax": 800,
+        "h1": 1,
+        "h2": 2,
+        "h3": 3,
+        "h4": 4,
+        "i1": "...",
+        "content_padding_addition": "10-100",
+        "rekey_after_time": "100-120",
+        "rekey_timeout": "3-7",
+        "reject_after_time": "150-180",
+        "keepalive_timeout": "5-15",
+        "max_handshake_attempts": "15-20"
+      }
+    }
+  ],
+  "inbounds": [
+    {
+      "type": "tun",
+      "tag": "tunnel",
+      "mtu": 1500,
+      "address": "172.19.0.1/30",
+      "auto_route": true,
+      "strict_route": true,
+      "stack": "system"
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "direct",
+      "tag": "Direct"
+    },
+    {
+      "type": "selector",
+      "tag": "Other",
+      "outbounds": [
+        "Direct",
+        "ProtonVPN"
+      ],
+      "interrupt_exist_connections": true
+    }
+  ],
+  "route": {
+    "rules": [
+      {
+        "action": "sniff",
+        "sniffer": [
+          "http",
+          "tls",
+          "quic"
+        ],
+        "timeout": "300ms"
+      },
+      {
+        "protocol": "dns",
+        "action": "hijack-dns"
+      },
+      {
+        "rule_set": "geoip_whitelist",
+        "outbound": "Direct"
+      },
+	  {
+        "rule_set": [
+		  "geoip_amazon",
+		  "geoip_cloudflare",
+		  "geoip_google",
+		  "geoip_telegram",
+	    ],
+        "outbound": "ProtonVPN"
+      }
+    ],
+    "rule_set": [
+      {
+        "type": "remote",
+        "tag": "geoip_whitelist",
+        "url": "https://raw.githubusercontent.com/hydraponique/roscomvpn-geoip/release/sing-box/whitelist.srs"
+      },
+	  {
+        "type": "remote",
+        "tag": "geoip_amazon",
+        "url": "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-amazon.srs"
+      },
+	  {
+        "type": "remote",
+        "tag": "geoip_cloudflare",
+        "url": "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-cloudflare.srs"
+      },
+	  {
+        "type": "remote",
+        "tag": "geoip_google",
+        "url": "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-google.srs"
+      },
+	  {
+        "type": "remote",
+        "tag": "geoip_telegram",
+        "url": "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-telegram.srs"
+      }
+    ],
+    "final": "Other",
+    "auto_detect_interface": true,
+    "default_domain_resolver": "nsdi_dns",
+    "default_http_client": "downloader"
+  }
+}
